@@ -1,3 +1,5 @@
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -25,17 +27,17 @@ public class BfsTask
 		{
 			var point = queue.Dequeue();
 			
-			if (point.Value.X < 0 || point.Value.Y < 0 || point.Value.X >= map.Dungeon.GetLength(0) || point.Value.X >= map.Dungeon.GetLength(1)) continue;
-			if (map.Dungeon[point.Value.X, point.Value.Y] == MapCell.Wall) continue;
+			if (!map.InBounds(point.Value)) continue;
+			if (map.Dungeon[point.Value.X, point.Value.Y] != MapCell.Empty) continue;
 
-			if (visited.Contains(point.Value)) yield return point;
-
+			foreach (var chest in chests)
+				if (chest == point.Value) yield return point;
+			
 			foreach (var (x, y) in possible)
-			{ 
-					
+			{
 				var next = new Point(point.Value.X + x, point.Value.Y + y);
-
-				if (!visited.Contains(next))
+                if (!map.InBounds(next)) continue;
+                if (!visited.Contains(next))
 				{
 					queue.Enqueue(new SinglyLinkedList<Point>(next, point));
 					visited.Add(next);
